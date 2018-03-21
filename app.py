@@ -75,4 +75,14 @@ def callback():
         abort(400)
     return 'OK'
 
-run(host='0.0.0.0', port=8081, debug=True)
+
+appenv = os.getenv('APP_ENV', None)
+
+if appenv != 'heroku':
+    host = "0.0.0.0"
+    port = 8081
+else:
+    host = os.getenv('HOST', None)
+    port = os.getenv('PORT', None)
+
+run(host=host, port=port, debug=True)
