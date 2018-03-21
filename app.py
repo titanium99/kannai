@@ -4,7 +4,7 @@
 0. start docker container // Write later!!
 $ docker 
 
-1. set env
+1. set your machene env
 $ MY_CHANNEL_ACCESS_TOKEN=''
 $ MY_CHANNEL_SECRET=''
 
@@ -26,7 +26,8 @@ $ python app.py
 # Todo
 - write settings No.0
 """
-from bottle import route, run, template
+import os, sys
+from bottle import route, run, template, post, request, abort
 from linebot import (
     LineBotApi, WebhookHandler
 )
@@ -36,12 +37,38 @@ from linebot.exceptions import (
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
 )
+import logging
 
-line_bot_api = LineBotApi('MY_CHANNEL_ACCESS_TOKEN')
-handler = WebhookHandler('MY_CHANNEL_SECRET')
+logger = logging.getLogger(__name__)
+
+# get channel_secret and channel_access_token from your environment variable
+channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
+channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', None)
+if channel_secret is None:
+    print('Specify LINE_CHANNEL_SECRET as environment variable.')
+    sys.exit(1)
+if channel_access_token is None:
+    print('Specify LINE_CHANNEL_ACCESS_TOKEN as environment variable.')
+    sys.exit(1)
+
+
+line_bot_api = LineBotApi(channel_access_token)
+handler = WebhookHandler(channel_secret)
 
 @post('/callback')
 def callback():
-    pass
+    # get X-Line-Signature header value
+    signature = request.headers['X-Line-Signature']
+
+    # get request body as text
+    body = request.get_data(as_text=True)
+    logger.info("Request body: " + body)
+
+    # handle webhook body
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        abort(400)
+    return 'OK'
 
 run(host='0.0.0.0', port=8081, debug=True)
