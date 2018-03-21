@@ -88,7 +88,7 @@ if __name__ == '__main__':
     appenv = os.getenv('APP_ENV', None)
 
     if appenv == 'heroku':
-        port = os.getenv('PORT', None)
+        port = int(os.getenv('PORT', None))
     
     else:
         port = 8081
