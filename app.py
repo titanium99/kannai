@@ -37,9 +37,13 @@ from linebot.exceptions import (
 from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
 )
+from tinydb import TinyDB, Query
 
 
+db = TinyDB('dbs.json')
+Song = Query()
 app = Flask(__name__)
+
 
 # get channel_secret and channel_access_token from your environment variable
 channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
@@ -54,6 +58,7 @@ if channel_access_token is None:
 
 line_bot_api = LineBotApi(channel_access_token)
 handler = WebhookHandler(channel_secret)
+
 
 @app.route('/')
 def index():
@@ -79,8 +84,18 @@ def callback():
 def message_text(event):
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text=event.message.text)
+        TextSendMessage(text=searchsongs(event.message.text))
     )
+
+def searchsongs(kwd):
+    player = db.search(Song.fullname.matches(kwd))
+    if player == 1:
+        return player[0]['fightsong']
+    elif player == 0:
+        return '選手が見つかりません'
+    else:
+        names = ",".jonin([i['fullname'] for i in player])
+        return "複数の選手が見つかりました\n{}".format(names)
 
 
 if __name__ == '__main__':
