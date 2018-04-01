@@ -94,7 +94,7 @@ def searchsongs(kwd):
     elif player == 0:
         return '選手が見つかりません'
     else:
-        names = ",".jonin([i['fullname'] for i in player])
+        names = ",".join([i['fullname'] for i in player])
         return "複数の選手が見つかりました\n{}".format(names)
 
 
