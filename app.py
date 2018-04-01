@@ -89,9 +89,9 @@ def message_text(event):
 
 def searchsongs(kwd):
     player = db.search(Song.fullname.matches(kwd))
-    if player == 1:
+    if len(player) == 1:
         return player[0]['fightsong']
-    elif player == 0:
+    elif len(player) == 0:
         return '選手が見つかりません'
     else:
         names = ",".join([i['fullname'] for i in player])
